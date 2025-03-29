@@ -4,15 +4,15 @@
 # This is can all be changed and adjusted according to everyone's thoughts
 
 def recommend_parks(prompt: str, month: int, crowdPreference: int):
-  """ The main function that takes in the user's input and returns a list of dictionaries, sorted from highest to lowest recommendation score. """
+  """ The main function that takes in the user's input and returns a dataframe, sorted from highest to lowest recommendation score. """
   pass
 
 def calculate_prompt_review_similarity_scores(prompt: str):
-  """ Given a prompt, calculate the prompt's similarity to the google reviews and return the score for each park as a list of dictionaries. """
+  """ Given a prompt, calculate the prompt's similarity to the google reviews and return the score for each park as a dataframe. """
   pass
 
 def calculate_prompt_wikipedia_similarity_scores(prompt: str):
-  """ Given a prompt, calculate the prompt's similarity to the Wikipedia pages and return the score for each park as a list of dictionaries. """
+  """ Given a prompt, calculate the prompt's similarity to the Wikipedia pages and return the score for each park as a dataframe. """
   pass
 
 def calculate_crowd_scores(month: int, crowdPreference: int):
@@ -20,6 +20,6 @@ def calculate_crowd_scores(month: int, crowdPreference: int):
   pass
 
 def calculate_distance_to_parks(city_name: str):
-  """ Given a city name, returns a list of dictionaries with the distance from that city to each park. """
+  """ Given a city name, returns a dataframe with the distance from that city to each park. """
   pass
   
