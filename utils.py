@@ -1,6 +1,6 @@
 # Imports
 import pandas as pd
-from geopy.distance import geodesic # Required for def calculate_distance_to_parks
+from geopy.distance import geodesic # Required for def calculate_distance_to_parks()
 
 # In this file, we can write individual python functions to be used in the main file
 
@@ -28,7 +28,12 @@ def calculate_distance_to_parks(city_name: str): #(city_name: str, cities_df, pa
   Takes city_name and calculates distance in miles to all parks (62 - Kings and Sequoia National Park both under 'seki' park code, so distance will be the same).
   Returns dataframe 62 x 3 columns - Park Name, Park Code, Distance_miles
   Code assumes no inputs for parks_df, cities_df. Code will load csv files from a local file path.
-  If 
+
+  Parameters:
+    city_name: The city name as defined in the worldcities_data (to be selected from dropdown in user input).
+
+  Returns:
+    distances_df: Dataframe of shape 62 x 3 (columns = Park Name, Park Code, Distance_miles), sorted by ascending order.
   """
   # Include if assuming csv not loaded globally
   cities_df = pd.read_csv("../worldcities_data.csv") # Change CSV file path as required
@@ -58,4 +63,29 @@ def calculate_distance_to_parks(city_name: str): #(city_name: str, cities_df, pa
 
   # Return dataframe
   return distances_df # returns dataframe of shape 62 x 3 (columns = Park Name, Park Code, Distance_miles). 62 total rows (not 63) as in NPS data Kings and Sequoia National Park are consider one and labeled as 'seki' Park Code.
+
+def get_proximities(park_code: str):
+  """
+  Given a Park Code, return a dataframe with distance from other parks, sorted by ascending distances.
+
+  Parameter:
+    park_code: Park code for specific park.
+
+  Return:
+    proximities: Dataframe containing distances (in miles) of parks from selected park, sorted by ascending order, excluding selected park. Shape 61,2 (columns = Park Code and selected park_code) (if select park removed). 
+  """
+  # Uncomment if park_proximities not loaded globally
+  # park_proximities = pd.read_csv('./park_proximities_miles.csv')
+
+  # Ensure park_code is in list of parks, if not return error statement
+  if park_code not in list(park_proximities['Park Code']):
+          return f"Error: Park code '{park_code}' not found in dataset."
+
+  # Extract column for the given park and sort values by distance in ascending order (closest park first)
+  sorted_distances = park_proximities[['Park Code', park_code]].sort_values(by=park_code)
+
+  # Drop first row - should be selected park distance to self = 0
+  final_df = sorted_distances.drop(0, axis=0)
   
+  return final_df # Returns dataframe of shape 61,2
+
