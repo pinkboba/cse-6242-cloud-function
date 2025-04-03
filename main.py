@@ -1,4 +1,6 @@
 from flask import jsonify
+from utils import *
+import pandas as pd
 
 # This is a header that needs to be in all responses going to a browser or else it breaks
 base_header = {'Access-Control-Allow-Origin': '*'}
@@ -32,8 +34,48 @@ def handle_post_request(request):
         'data': f'The prompt is {prompt}. The month is {month}. The crowdPreference is {crowdPreference}.'
     } 
     return (jsonify(message), 200, base_header)
+################################################  THIS SECTION ADDED BY IAN  ############################################
+# Load data to be used by Drop Down Options for Enter City + Calculating Parks distances from city
+def load_and_initialize_data():
+    """Load CSV files and initialize data globally."""
+    try:
+        # Load the CSV files
+        cities_df = pd.read_csv(CITY_CSV_PATH) # Add path for world_cities.csv
+        parks_df = pd.read_csv(PARK_CSV_PATH) # Add path for most updated parks.csv
 
+        # Store the data globally
+        app.config['CITIES_DF'] = cities_df
+        app.config['PARKS_DF'] = parks_df
+        app.config['CITIES_LIST'] = cities_df['City_Country'].unique().tolist()  # Store city list for drop down options
 
+        print("Data loaded successfully.")
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        app.config['CITIES_DF'] = None
+        app.config['PARKS_DF'] = None
+        app.config['CITIES_LIST'] = []
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        app.config['CITIES_DF'] = None
+        app.config['PARKS_DF'] = None
+        app.config['CITIES_LIST'] = []
+
+# Call load_and_initialize_data() at startup
+load_and_initialize_data()
+#########################################################################################################################
+################################################# Added by Ian ##########################################################
+# To handle request by dropdown to get list of cities
+def get_cities():
+    """Handle city search requests via AJAX."""
+    query = request.args.get('query', '')
+    if not query:
+        return jsonify({"message": "No query parameter provided"}), 400
+
+    # Get the city list from app.config
+    matching_cities = [city for city in app.config['CITIES_LIST'] if city.lower().startswith(query.lower())]
+    matching_cities.sort()
+    return jsonify(matching_cities)
+##########################################################################################################################
 def main(request):
   
     if request.method == 'OPTIONS':
