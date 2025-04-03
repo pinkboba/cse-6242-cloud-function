@@ -23,21 +23,24 @@ def calculate_crowd_scores(month: int, crowdPreference: int):
   """ Given a month as a number 1-12 and a crowdPreference value 0 or 1, look up the park-specific crowd index for each park for the given month. """
   pass
 
-def calculate_distance_to_parks(city_name: str): #(city_name: str, cities_df, parks_df): Switch if inputs for cities_df, parks_df exist
+def calculate_distance_to_parks(city_name: str, cities_df, parks_df): # Switch if inputs for cities_df, parks_df do not exist
   """
-  Takes city_name and calculates distance in miles to all parks (62 - Kings and Sequoia National Park both under 'seki' park code, so distance will be the same).
+  Takes city_name, cities_df, and parks_df and calculates distance in miles to all parks (62 - Kings and Sequoia National Park both under 'seki' park code, so distance will be the same).
   Returns dataframe 62 x 3 columns - Park Name, Park Code, Distance_miles
   Code assumes no inputs for parks_df, cities_df. Code will load csv files from a local file path.
 
+  cities_df = Dataframe with city names, latitude, longitude, and 'City_Country' (for further differentiation)
+  parks_df = Dataframe with park name, park code, latitude, longitude data
+  
   Parameters:
     city_name: The city name as defined in the worldcities_data (to be selected from dropdown in user input).
 
   Returns:
     distances_df: Dataframe of shape 62 x 3 (columns = Park Name, Park Code, Distance_miles), sorted by ascending order.
   """
-  # Include if assuming csv not loaded globally
-  cities_df = pd.read_csv("../worldcities_data.csv") # Change CSV file path as required
-  parks_df = pd.read_csv("../parks_03132025.csv") # Change CSV file path as required
+  # # Include if assuming csv not loaded globally
+  # cities_df = pd.read_csv("../worldcities_data.csv") # Change CSV file path as required
+  # parks_df = pd.read_csv("../parks_03132025.csv") # Change CSV file path as required
 
   # Ensure city_name is in cities_csv or cities_df
   try:
