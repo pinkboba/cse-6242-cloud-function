@@ -28,10 +28,21 @@ def handle_post_request(request):
     prompt = request.json['prompt']
     month = request.json['month']
     crowdPreference = request.json['crowdPreference']
+    city = request.json['city'] # Added by Ian
 
+    ########################## Added by Ian ########################################
+    # Access data from app.config
+    cities_df = app.config.get('CITIES_DF')
+    parks_df = app.config.get('PARKS_DF')
+
+    # Calculate distance of city to parks and return Dataframe, then convert to json
+    park_distances = calculate_distance_to_parks(city_name, cities_df, parks_df)
+    park_distances_json = park_distances.to_dict(orient='records')
+    ################################################################################
     message = {
         'message': 'success',
-        'data': f'The prompt is {prompt}. The month is {month}. The crowdPreference is {crowdPreference}.'
+        'data': f'The prompt is {prompt}. The month is {month}. The crowdPreference is {crowdPreference}. The city is {city}.', # This also modified
+        'park_distances': park_distances_json # Added by Ian
     } 
     return (jsonify(message), 200, base_header)
 ################################################  THIS SECTION ADDED BY IAN  ############################################
