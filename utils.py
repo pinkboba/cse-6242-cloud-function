@@ -68,6 +68,66 @@ def load_and_assign_google_weights(csv_path):
 
     return df
 
+def calculate_weighted_score(wikipedia_df: pd.DataFrame, reviews_df: pd.DataFrame, crowd_df: pd.DataFrame, counts_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculate a weighted average score for a national park based on review scores, Wikipedia presence, and crowd density.
+
+    Parameters:
+    - wikipedia_df (pd.DataFrame): DataFrame with columns ['Park Name', 'Similarity Score', 'Park Code']
+    - reviews_df (pd.DataFrame): DataFrame with columns ['Park Name', 'Similarity Score', 'Park Code']
+    - crowd_df (pd.DataFrame): DataFrame with columns ['Park Code', 'CrowdScore']
+    - counts_df (pd.DataFrame): DataFrame with columns ['Park Code', 'CrowdDensityScore', 'GoogleWeight']
+
+    Returns:
+    - pd.DataFrame: A DataFrame with columns ['Park Code', 'WeightedScore'] for each park.
+    """
+
+    #### Code to clean up dfs from score output and crowd output #######
+    # Rename columns for standardization (if necessary) before merging
+    wikipedia_df = wikipedia_df.rename(columns={'Similarity Score': 'WikiScore', 'Park Code': 'Code'})
+    reviews_df = reviews_df.rename(columns={'Similarity Score': 'ReviewScore', 'Park Code': 'Code'})
+    crowd_df = crowd_df.rename(columns={'CrowdScore': 'CrowdScore', 'Park Code': 'Code'})
+
+    # Merge all data sources on 'Code' (Park Code)
+    merged_df = (
+        wikipedia_df
+        .merge(reviews_df, on='Code', how='left')
+        .merge(crowd_df, on='Code', how='left')
+        .merge(counts_df, on='Code', how='left')
+    )
+
+    # Function to calculate weighted score per park
+    def calc_score(row):
+        # Extract the individual scores
+        review_score = row['ReviewScore']
+        wiki_score = row['WikiScore']
+        crowd_score = row['CrowdScore']
+        review_weight = row['GoogleWeight']
+
+        # Calculate weights for each score type based on GoogleWeight
+        wiki_weight = 0.8 - review_weight
+        crowd_weight = 0.2
+
+        # Normalize weights so they sum to 1 (they are proportional)
+        total_weight = review_weight + wiki_weight + crowd_weight
+        review_weight /= total_weight
+        wiki_weight /= total_weight
+        crowd_weight /= total_weight
+
+        # Compute the weighted average score
+        weighted_score = (
+            review_score * review_weight +
+            wiki_score * wiki_weight +
+            crowd_score * crowd_weight
+        )
+        return round(weighted_score, 2)
+
+    # Apply the score calculation to each row in the merged DataFrame
+    merged_df['WeightedScore'] = merged_df.apply(calc_score, axis=1)
+
+    # Return only the 'Code' and 'WeightedScore' columns in the result
+    return merged_df[['Code', 'WeightedScore']]
+
 def calculate_distance_to_parks(city_name: str, cities_df, parks_df): # Switch if inputs for cities_df, parks_df do not exist
   """
   Takes city_name, cities_df, and parks_df and calculates distance in miles to all parks (62 - Kings and Sequoia National Park both under 'seki' park code, so distance will be the same).
