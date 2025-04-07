@@ -23,6 +23,51 @@ def calculate_crowd_scores(month: int, crowdPreference: int):
   """ Given a month as a number 1-12 and a crowdPreference value 0 or 1, look up the park-specific crowd index for each park for the given month. """
   pass
 
+def load_and_assign_google_weights(csv_path):
+    """
+    Add 'GoogleWeight' column to the DataFrame based on the quartile of GoogleReviewCount.
+
+    Quartile Ranges:
+    - 0–25th percentile  → weight = 0.2
+    - 25–50th percentile → weight = 0.3
+    - 50–75th percentile → weight = 0.5
+    - 75–100th percentile→ weight = 0.6
+
+    0.2 --> Default Crowd Density Weight
+
+    Parameters:
+    - csv_path (str): Path to CSV file with 'Code' and 'GoogleReviewCount' columns.
+
+    Returns:
+    - pd.DataFrame: Original DataFrame with an added 'GoogleWeight' column.
+    """
+
+    df = pd.read_csv(csv_path)
+
+    # Remove commas and convert to int
+    df['GoogleReviewCount'] = df['GoogleReviewCount'].str.replace(',', '', regex=False).astype(int)
+
+    # Compute quartiles
+    q1 = df['GoogleReviewCount'].quantile(0.25)
+    q2 = df['GoogleReviewCount'].quantile(0.50)
+    q3 = df['GoogleReviewCount'].quantile(0.75)
+
+    # Function to assign weights based on quartiles
+    def get_weight(count):
+        if count <= q1:
+            return 0.2
+        elif count <= q2:
+            return 0.3
+        elif count <= q3:
+            return 0.5
+        else:
+            return 0.6
+
+    # Apply weight function
+    df['GoogleWeight'] = df['GoogleReviewCount'].apply(get_weight)
+
+    return df
+
 def calculate_distance_to_parks(city_name: str, cities_df, parks_df): # Switch if inputs for cities_df, parks_df do not exist
   """
   Takes city_name, cities_df, and parks_df and calculates distance in miles to all parks (62 - Kings and Sequoia National Park both under 'seki' park code, so distance will be the same).
